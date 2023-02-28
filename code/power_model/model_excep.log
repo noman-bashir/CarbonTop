@@ -1,0 +1,4 @@
+Expected 2D array, got 1D array instead:
+array=[5.00099824e+03 1.00000000e+00 0.00000000e+00 0.00000000e+00
+ 1.44969168e+10 2.44254194e+10 4.53773229e+09 2.28662750e+07].
+Reshape your data either using array.reshape(-1, 1) if your data has a single feature or array.reshape(1, -1) if it contains a single sample.
