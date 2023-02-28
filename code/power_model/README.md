@@ -16,6 +16,8 @@ If the venv fails to activate, try appending .zsh, .fish, or .csh to the "activa
 
 `python3 predict.py 5000.998244,1,0,0,14496916779,24425419430,4537732291,22866275`
 
+Input is comma separated list of hardware counters in this order: Task Clock, Context-Switches, CPU-migrations, page-faults, cycles, instructions, branches, branch-misses
+
 
 ## Outputs:
 
