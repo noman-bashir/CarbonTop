@@ -9,7 +9,7 @@ On future runs, make sure the venv is activated before invoking the script with 
 
 If the setup script fails, make sure python3-venv is installed. On Ubuntu: `apt-get install python3-venv`
 
-If the venv fails to activate, try appending .zsh, .fish, or .csh to the `source` commands (different script types for different shell implementations)
+If the venv fails to activate, try appending .zsh, .fish, or .csh to the "activate" in the `source` commands (different script types for different shell implementations)
 
 
 ## Usage:
