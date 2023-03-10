@@ -24,7 +24,7 @@ def powerEstimate(feats):
 
         power = pred - config.BASE_POW
         
-        return(power)
+        print(power)
 
 
     except Exception as ex:
