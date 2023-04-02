@@ -3,7 +3,9 @@ import subprocess
 import time
 import sys
 import tracemalloc
+import concurrent.futures
 import threading
+
 def get_all_pids():
     ps_cmd =  ['ps', '-e', '-o', 'pid']
     out = subprocess.Popen(ps_cmd, stdout = subprocess.PIPE).communicate()[0]
@@ -13,13 +15,21 @@ def get_all_pids():
     return out
 
 def perf_run(pid):
-    print("perf_start:"+str(time.time()))
-    cmd='perf stat -x, -o cpu_output_1 -p %s sleep %s' % (str(pid), sys.argv[1])
-    p=os.system(cmd)
-    print("perf_end:"+str(time.time()))
+    i=0
+    #power_thread = threading.Thread(target=power_calc, args=pid)
+    while(i):
+        i+=1
+        power_thread = threading.Thread(target=power_calc, args=(pid,))
+        #print("perf_start:"+str(time.time())+" for pid : "+str(pid))
+        cmd='perf stat -x, -o cpu_output_1 -p %s sleep %s' % (str(pid), sys.argv[1])
+        p=os.system(cmd)
+        #print("power_thread started : ", str(pid))
+        power_thread.start()
+        #print("perf_end:"+str(time.time())+" for pid : "+ str(pid))
+    #print("out of for in perf")
 
-def power_calc():
-    print("power_start: "+str(time.time()))
+def power_calc(pid):
+    print("power_start : "+str(time.time())+" for pid : "+str(pid) )
     with open('cpu_output_1') as reader:
         lines = [line.rstrip('\n') for line in reader]
     task_clock=float(lines[2].split(',')[4])
@@ -30,26 +40,37 @@ def power_calc():
     instructions =float( lines[7].split(',')[4])
     branches = float(lines[8].split(',')[4])
     branch_misses = float(lines[9].split(',')[4])
-    cmd2 = 'python3 predict.py %f,%f,%f,%f,%f,%f,%f,%f >> power_output ' % (task_clock, context_switch, cpu_migration, page_faults, cycles, instructions, branches, branch_misses)
+    cmd2 = 'python3 predict.py %f,%f,%f,%f,%f,%f,%f,%f >> power_output2 ' % (task_clock, context_switch, cpu_migration, page_faults, cycles, instructions, branches, branch_misses)
     p1=os.system(cmd2)
-    print("power_end: "+ str(time.time()))
+    print("power_end: "+ str(time.time())+" for pid: "+str(pid))
 
 if __name__=='__main__':
-    start_time = time.time()
-    #tracemalloc.start()
-    #i=0;
     pids = get_all_pids()
-    for pid in pids:
-        perf = threading.Thread(target=perf_run, args=(pid,))
-        perf.start()
-        power = threading.Thread(target=power_calc)
+    
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(pids)) as executor:
         
-        perf.join()
-        power.start()
-    #print(tracemalloc.get_traced_memory())
-    #tracemalloc.stop()
-    total_time = time.time() - start_time
-    print(total_time)
-    power.join()
+        start_time = time.time()
+        #perf_run(pids[0])
+        #power_calc(pids[0])
+        #tracemalloc.start()
+        #while(i<3):
+            #i+=1
+        for pid in pids:
+            executor.submit(perf_run, pid)
+        executor.shutdown()
+        #print("out of pid loop: ")
+        
+            #for pid in pids: 
+               # executor.submit(power_calc, pid)
+            #print("still inside while")
+        #perf.start()
+        #power = threading.Thread(target=power_calc)
+        #perf.join()
+        #power.start()
+        #print(tracemalloc.get_traced_memory())
+        #tracemalloc.stop()
+        total_time = time.time() - start_time
+        print(total_time)
+    
 #Task Clock, Context-Switches, CPU-migrations, page-faults, cycles, instructions, branches, branch-misses
 
